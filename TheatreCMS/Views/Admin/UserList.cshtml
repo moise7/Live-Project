@@ -1,0 +1,173 @@
+﻿@model IEnumerable<TheatreCMS.Models.ApplicationUser>
+@using TheatreCMS.Controllers
+@{
+    ViewBag.Title = "UserList";
+    string DecideCaret(string fieldName)
+    {
+        if (ViewBag.SortOrder.Contains(fieldName))
+        {
+            string caret = ViewBag.SortOrder.Contains("_desc") ? "&#9662;" : "&#9652;";
+            return caret;
+        }
+        return null;
+    }
+}
+
+<h2>UserList</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table-styling">
+  <tr class="tr-styling">
+    <th class="th-styling">
+      @Html.Raw(DecideCaret(Html.DisplayNameFor(model => model.UserName).ToString()))
+      @Html.ActionLink(Html.DisplayNameFor(model => model.UserName).ToString(), "UserList", "Admin", new { requestedSort = "UserName", currentSortOrder = ViewBag.SortOrder }, new { @class = "text-white" })
+    </th>
+    <th class="th-styling">
+      @Html.Raw(DecideCaret(Html.DisplayNameFor(model => model.FirstName).ToString()))
+      @Html.ActionLink(Html.DisplayNameFor(model => model.FirstName).ToString(), "UserList", "Admin", new { requestedSort = "FirstName", currentSortOrder = ViewBag.SortOrder }, new { @class = "text-white" })
+    </th>
+    <th class="th-styling">
+      @Html.Raw(DecideCaret(Html.DisplayNameFor(model => model.LastName).ToString()))
+      @Html.ActionLink(Html.DisplayNameFor(model => model.LastName).ToString(), "UserList", "Admin", new { requestedSort = "LastName", currentSortOrder = ViewBag.SortOrder }, new { @class = "text-white" })
+    </th>
+    <th class="th-styling">
+      @Html.Raw(DecideCaret(Html.DisplayNameFor(model => model.Role).ToString()))
+      @Html.ActionLink(Html.DisplayNameFor(model => model.Role).ToString(), "UserList", "Admin", new { requestedSort = "Role", currentSortOrder = ViewBag.SortOrder }, new { @class = "text-white" })
+    </th>
+    <th class="th-styling">
+      <div class="text-white">
+        Options
+      </div>
+    </th>
+  </tr>
+
+  @foreach (var item in Model)
+  {
+    <tr class="tr-styling">
+      <td class="td-styling">
+        @Html.DisplayFor(modelItem => item.UserName)
+      </td>
+      <td class="td-styling">
+        @Html.DisplayFor(modelItem => item.FirstName)
+      </td>
+      <td class="td-styling">
+        @Html.DisplayFor(modelItem => item.LastName)
+      </td>
+      <td class="td-styling">
+        @Html.DisplayFor(modelItem => item.Role)
+      </td>
+      <td class="text-center">
+        @if (item.Role == "Subscriber")
+        {
+
+          <a href="@Url.Action("Details", "Subscriber", new { id = item.SubscriberPerson.SubscriberId, area = "Subscribers" }, null)">Details </a> @:|
+          <a href="@Url.Action("Edit", "Subscriber", new { id = item.SubscriberPerson.SubscriberId, area="Subscribers"}, null)"> Edit </a>@:|
+          <a href="@Url.Action("DeleteSubscribers", "Admin", new { id = item.SubscriberPerson.SubscriberId}, null)" data-toggle="modal" data-target="#myModal" data-element-to-delete="item.SubscribersID"> Delete </a><br>
+
+        }
+        @if (item.Role == "Member")
+        {
+
+          @*@Html.ActionLink("Details", "Details", "CastMember", new { id = item.CastMemberUserID }, null) this was the way the link for CastMember Details was previously implemented*@
+
+          <a href="@Url.Action("Details", "CastMembers", new { id = item.CastMemberUserID}, null)">Details </a>@:|
+          <a href="@Url.Action("Edit", "CastMembers", new { id = item.CastMemberUserID}, null)"> Edit </a>@:|
+          <a href="@Url.Action("DeleteConfirmed", "Admin", new { id = item.CastMemberUserID}, null)" data-toggle="modal" data-target="#myModal1" data-element-to-delete="item.CastMemberUserID"> Delete </a><br>
+
+          //Creating a delete modal for member
+          <!-- Modal -->
+          <div class="modal fade" id="myModal" role="dialog">
+            <div class="modal-dialog">
+
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                  <div class="modal fade" id="DeleteConfirmation">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Delete Member</h4>
+                  </div>
+                  <div class="modal-body">
+                    <h4>Are you sure? You want to Delete this Record. </h4>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <a href="#" class="btn btn-primary" data-dismiss="modal">Cancel</a>
+                    <button class="btn btn-danger" onclick="ConfirmDelete()">Confirm</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          //end of modal
+          <script>
+          function DeleteMember(Member) {
+            $("#MemberId").val(Member);
+            $("#DeleteConfirmation").modal("show");
+          }
+          function ConfirmDelete() {
+            var MemberId = $("#MemberId").val();
+            console.log("Delete");
+            $.ajax({
+              method: "POST",
+              url: "@Url.Action("Delete","Admin")",
+              data: { Id: "@item.Id" },
+              success: function (result) {
+                $("#DeleteConfirmation").modal("hide");
+              // $(".row_" + Member).remove();
+              }
+            });
+
+          </script>
+
+          <!-- Modal -->
+          <div class="modal fade" id="myModal1" role="dialog">
+            <div class="modal-dialog">
+
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                  <div class="modal fade" id="SubscribersDelele">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Delete Subscribers</h4>
+                  </div>
+                  <div class="modal-body">
+                    <h4>Are you sure? You want to Delete this Record. </h4>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <a href="#" class="btn btn-primary" data-dismiss="modal">Cancel</a>
+                    <button class="btn btn-danger" onclick="ConfirmDelete()">Confirm</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          @*end of modal*@
+          <script>
+            function DeleteSubscribers(Subscribers) {
+            $("#SubscriberId").val(Subscriber);
+              $("#SubscribersDelele").modal("show");
+          }
+          function ConfirmDelete() {
+            var MemberId = $("#SubscriberId").val();
+            console.log("Delete");
+            $.ajax({
+              method: "POST",
+              url: "@Url.Action("Delete","Admin")",
+              data: { Id: "@item.Id" },
+              success: function (result) {
+                $("#SubscribersDelele").modal("hide");
+              //  $(".row_" + Member).remove();
+              }
+            });
+
+            }
+          </script>
+        }
+      </td>
+    </tr>
+
+  }
+</table>
